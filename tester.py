@@ -45,7 +45,8 @@ class Tester:
     if cell == None: return False
     return cell.has_attr('data-sheets-formula')
   
-  def is_background_color(self, bgcolor: str, position: CellPosition) -> bool:
+  def has_bgcolor(self, bgcolor: str, position: CellPosition) -> bool:
     cell = self.get_cell_data(position)
-    if cell == None or not cell.has_attr('bgcolor'): return False
-    return cell.attrs["bgcolor"] == bgcolor
+    if cell != None:
+      return cell.has_attr('bgcolor')
+    else: return False
