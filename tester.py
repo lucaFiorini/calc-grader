@@ -47,6 +47,5 @@ class Tester:
   
   def has_bgcolor(self, bgcolor: str, position: CellPosition) -> bool:
     cell = self.get_cell_data(position)
-    if cell != None:
-      return cell.has_attr('bgcolor')
-    else: return False
+    if cell == None: return False 
+    return cell.has_attr('bgcolor')
