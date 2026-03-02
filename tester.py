@@ -43,7 +43,7 @@ class Tester:
     except: return v
 
   
-  def is_value(self, value: cellValue, position: CellPosition) -> bool:
+  def is_value(self, position: CellPosition, value: cellValue) -> bool:
     return self.get_cell_value(position) == value
   
   def is_formula(self, position: CellPosition) -> bool:
@@ -51,7 +51,20 @@ class Tester:
     if cell == None: return False
     return cell.has_attr('data-sheets-formula')
   
-  def has_bgcolor(self, bgcolor: str, position: CellPosition) -> bool:
+  def has_bgcolor(self, position: CellPosition, bgcolor: str) -> bool:
     cell = self.get_cell_data(position)
     if cell == None: return False 
     return cell.has_attr('bgcolor')
+  
+  def get_formula(self, position: CellPosition) -> str|None:
+    cell = self.get_cell_data(position)
+    if cell is None: 
+      return None
+    if cell.has_attr('data-sheets-formula'):
+      return str(cell['data-sheets-formula'])
+    else:
+      return None
+    
+  def is_same_formula(self, position: CellPosition, formula: str) -> bool:
+    return self.get_formula(position) == formula
+  
