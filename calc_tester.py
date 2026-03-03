@@ -1,15 +1,19 @@
+from typing import Callable, assert_never
+
 from calc_types import CellPosition, cellValue
 from dataclasses import dataclass, field
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
+from testing import ExecutedTest, Fail, Result, Success, TestCase
+
 @dataclass
-class Tester:
+class CalcParser:
   file : BeautifulSoup
   table_tag : Tag = field(init=False)
   table_cell_elems : list[list[Tag]] = field(init=False)
 
-  def __post_init__(self):
+  def __post_init__(self)->None:
 
     tables = self.file.find_all('table')
     assert len(tables) != 0, "The table is empty"
@@ -35,8 +39,8 @@ class Tester:
   def get_cell_value(self, position: CellPosition) -> cellValue|None:
     cell = self.get_cell_data(position)
     if cell == None or cell.text == "": return None
-    if cell.has_attr('sdvalue'): 
-      v = str(cell.attrs['sdvalue'])
+    if cell.has_attr('sdval'): 
+      v = str(cell.attrs['sdval'])
     else:
       v = str(cell.text) 
     try: return int(v)
@@ -67,4 +71,30 @@ class Tester:
     
   def is_same_formula(self, position: CellPosition, formula: str) -> bool:
     return self.get_formula(position) == formula
+
+@dataclass(kw_only=True)
+class BulkTester:
+  parser : CalcParser
+  cells : list[CellPosition]
+  tests : list[
+      TestCase[
+        Callable[[CalcParser,CellPosition],Result]
+      ]
+    ]
   
+  def run(self) -> list[ExecutedTest]:
+
+    results : list[ExecutedTest] = []
+
+    for test in self.tests:
+      for cell in self.cells:
+        res = test.func(self.parser,cell)
+        match res:
+          case Success(): pass
+          case Fail(_): 
+            results.append(ExecutedTest(test.definition, res))
+            break
+      
+      results.append(ExecutedTest(test.definition, Success()))
+
+    return results

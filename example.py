@@ -1,10 +1,23 @@
-from tester import CellPosition, Tester
+from calc_tester import BulkTester, CellPosition, CalcParser
 from bs4 import BeautifulSoup
+
+from testing import Success, TestCase, Fail, Result, TestDefinition
 
 if __name__ == '__main__':
   with open('test.xhtml') as f:
-    tests = Tester(BeautifulSoup(f,"html.parser"))    
-    print(tests.is_formula(CellPosition("C",2)))
+    parser = CalcParser(BeautifulSoup(f,"html.parser"))    
     
-    for cell in CellPosition.Range(CellPosition.From_String("A22"),CellPosition.From_String("B22")):
-      
+    BulkTester(
+      parser=parser,
+      cells=CellPosition.Range_From_String("A22:A32"),
+      tests=[
+        TestCase(
+          TestDefinition("Funzione",0.5),
+          lambda parser,cell: Success() if parser.is_formula(cell) else Fail("Non è una formula")
+        ),
+        TestCase(
+          TestDefinition("Funzione",0.5),
+          lambda parser,cell: Success() if parser.is_formula(cell) else Fail("Non è una formula")
+        )
+      ]
+    ).run()
