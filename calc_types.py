@@ -68,3 +68,8 @@ class CellPosition:
         else:
             row += c
     return CellPosition(col=col, row=int(row))
+  
+  @staticmethod
+  def Range_From_String(s: str) -> list[CellPosition]:
+    (a,b) = s.split(':')
+    return CellPosition.Range(CellPosition.From_String(a),CellPosition.From_String(b))
