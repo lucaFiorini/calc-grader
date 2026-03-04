@@ -3,8 +3,6 @@ from dataclasses import dataclass, field
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
-from testing import ExecutedTest, Fail, Result, Success, TestCase
-
 @dataclass
 class CalcParser:
   file : BeautifulSoup
@@ -57,3 +55,9 @@ class CalcParser:
       return str(cell['data-sheets-formula'])
     else:
       return None
+    
+  def is_bold(self,position: CellPosition) -> bool:
+    cell = self.get_cell_data(position)
+    if cell is None:
+      return False
+    return cell.find('b') is not None
