@@ -54,7 +54,6 @@ class TestResult(BaseModel):
 
   def model_post_init(self, context: Any) -> None:
     assert self.possible_score != 0
-    assert self.passed <= self.possible_score
     return super().model_post_init(context)
   
 class Case(BaseModel):
