@@ -107,5 +107,5 @@ class TestResultList(BaseModel):
     return acc
 
   def get_got_fraction(self) -> float:
-    return self.get_possible_score() / self.get_got_score()
+    return self.get_got_score() / self.get_possible_score()
   
