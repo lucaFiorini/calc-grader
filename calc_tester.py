@@ -13,7 +13,7 @@ class TestSet(BaseModel):
   match_bgcolor      : str|None              = None
 
   def execute(self, parser : CalcParser, cells : list[CellPosition]):
-      cell_values = [parser.get_cell_data(cell) for cell in cells]
+      cell_values = [parser.get_cell_value(cell) for cell in cells]
       cell_formulas = [parser.get_cell_formula(cell) for cell in cells]
       bgcolors = [parser.get_bgcolor(cell) for cell in cells]
 
