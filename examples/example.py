@@ -1,6 +1,6 @@
 import toml
 
-from calac_tester import Test
+from calc_tester import Test
 from pydantic import ValidationError
 
 with open('example.toml') as f:
