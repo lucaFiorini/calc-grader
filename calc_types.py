@@ -1,5 +1,5 @@
+from __future__ import annotations
 from pydantic import BaseModel
-from typing import Self
 type coord = tuple[int,int]
 type cellValue = int|str
 
