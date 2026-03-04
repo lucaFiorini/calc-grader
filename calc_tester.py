@@ -177,7 +177,7 @@ class TestResultList(BaseModel):
   def get_got_score(self) -> int:
     acc = 0
     for test_result in self.test_results:
-      if test_result.result:
+      if test_result.result.value:
         acc+=test_result.possible_score
     return acc
 
