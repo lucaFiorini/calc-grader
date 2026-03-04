@@ -1,9 +1,11 @@
-from typing import Any, assert_never
+from typing import Any, Callable
 
 from .calc_types import cellValue,CellPosition
 from .calc_xml_parser import CalcParser
 from pydantic import BaseModel,Field,PrivateAttr
 from bs4 import Tag
+from enum import Enum
+
 class TestSet(BaseModel):
   match_values               : list[cellValue]|None = None
   match_solution_values      : bool                 = False
@@ -94,11 +96,15 @@ class TestSet(BaseModel):
     if self.match_solution_bgcolor:
       return submission_bgcolors == solution_bgcolors
     return True
-        
-class TestResult(BaseModel):
+
+class TestResult(Enum):
+  Invalidated = None
+  Failed = False 
+  Passed = True
+class TestResultInfo(BaseModel):
   test_name : str
   possible_score : int
-  passed : bool
+  result : TestResult
 
   def model_post_init(self, context: Any) -> None:
     assert self.possible_score != 0
@@ -110,8 +116,9 @@ class Case(BaseModel):
   tests : TestSet
 
 class Test(BaseModel):
-  range : str
-  cases  : list[Case] = Field(default_factory=lambda: list())
+  range         : str
+  prerequisite  : Case|None     = None
+  cases         : list[Case]    = Field(default_factory=lambda: list())
 
   _cells : list[CellPosition] = PrivateAttr(default_factory=lambda: list())
 
@@ -126,19 +133,40 @@ class Test(BaseModel):
     
     return super().model_post_init(context)
   
+
   def execute(self,submission: CalcParser, solution : CalcParser) -> 'TestResultList':
-    return TestResultList(test_results = [
-        TestResult (
+    
+    def assess_all_subcases(case_result : Callable[[Case],TestResult]):
+      return [
+        TestResultInfo (
           test_name=test_case.name,
           possible_score=test_case.weight,
-          passed=test_case.tests.execute(submission, solution, self._cells)
+          result=case_result(test_case)
         )
         for test_case in self.cases
       ]
-    )
+    
+    if self.prerequisite is not None:
+      
+      prerequisite_result = TestResultInfo (
+          test_name=f"(Prerequisito) {self.prerequisite.name}",
+          possible_score=self.prerequisite.weight,
+          result=TestResult(self.prerequisite.tests.execute(submission, solution, self._cells))
+        )
+      
+      if prerequisite_result.result:
+        return TestResultList(
+          test_results = [prerequisite_result] + assess_all_subcases(lambda case: TestResult(case.tests.execute(submission, solution, self._cells)))
+        )
+      else:
+        return TestResultList(
+          test_results = [prerequisite_result] + assess_all_subcases(lambda _: TestResult.Invalidated)
+        )
+      
+    return TestResultList(test_results = assess_all_subcases(lambda case: TestResult(case.tests.execute(submission, solution, self._cells))))
   
 class TestResultList(BaseModel):
-  test_results : list[TestResult]
+  test_results : list[TestResultInfo]
 
   def get_possible_score(self) -> int:
     acc = 0
@@ -149,7 +177,7 @@ class TestResultList(BaseModel):
   def get_got_score(self) -> int:
     acc = 0
     for test_result in self.test_results:
-      if test_result.passed:
+      if test_result.result:
         acc+=test_result.possible_score
     return acc
 
