@@ -5,7 +5,7 @@ range="F18:F21"
 name = "Valori"
 weight = 2
 [cases.tests]
-match_values = [360,440,560,100]
+match_solution_values = true
 [[cases]]
 weight = 1
 name = "Formula Efficiente"

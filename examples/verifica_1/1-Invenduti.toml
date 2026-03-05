@@ -5,6 +5,6 @@ range="E2:E14"
 name = "Valori"
 weight = 2
 [cases.tests]
-match_values = [50,50,10,10,10,50,50,50,10,10,30,20,30]
+match_solution_values=true
 is_formula = true
 no_formula_drift = true

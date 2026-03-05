@@ -1,10 +1,10 @@
-# Totale Invenduto (Per tipo di pane)
+# Totale Invenduto (Per tipo di Pane)
 
 range="F18:F21"
-[[cases]]
+[prerequisite]
 name = "Valori"
 weight = 2
-[cases.tests]
+[prerequisite.tests]
 match_values = [360,440,560,100]
 [[cases]]
 weight = 1

@@ -1,13 +1,14 @@
 import toml
 import subprocess
 
-#from py_calc_tester.calc_tester import Test
+#from py_calc_tester.calc_tester import Test,TestResult
 #from py_calc_tester.calc_xml_parser import CalcParser
+
 from calc_tester import Test,TestResult
 from calc_xml_parser import CalcParser
 
-from bs4 import BeautifulSoup
 
+from bs4 import BeautifulSoup
 
 
 ATTACHMENTS = '{{ATTACHMENTS}}'.split(',')
@@ -26,7 +27,7 @@ if ATTACHMENT == SOLUTION_FILE_NAME:
 
 LIBREOFFICE_COMMAND = lambda f: ['libreoffice','--convert-to','xhtml',f]
 
-subprocess.run(LIBREOFFICE_COMMAND(ATTACHMENT),check=True,stderr=subprocess.DEVNULL)
+subprocess.run(LIBREOFFICE_COMMAND(ATTACHMENT),check=True,stderr=subprocess.DEVNULL,stdout=subprocess.DEVNULL)
 
 fname = ATTACHMENT.removesuffix('.ods')
 output_file_name = f"{fname}.xhtml"
@@ -35,7 +36,7 @@ with open(output_file_name) as f:
   submission_parser = CalcParser(BeautifulSoup(f,features='lxml'))
 
 try:
-  subprocess.run(LIBREOFFICE_COMMAND(SOLUTION_FILE_NAME),check=True,stderr=subprocess.DEVNULL)
+  subprocess.run(LIBREOFFICE_COMMAND(SOLUTION_FILE_NAME),check=True,stderr=subprocess.DEVNULL,stdout=subprocess.DEVNULL)
   SOLUTION_XHTML_RESULT = f"{SOLUTION_FILE_NAME.removesuffix('.ods')}.xhtml"
 
   with open(SOLUTION_XHTML_RESULT) as f:
@@ -45,10 +46,11 @@ except:
   raise Exception('Errore Interno: File di soluzione NON trovato')
 
 tests = Test.model_validate(toml.loads("""{{TEST.extra| e('py')}}"""))
-
-
 res = {}
+
 res['got'] = ""
+res['got'] += f"Range del test: {tests.range}\n"
+res['got'] += f"\n"
 
 results = tests.execute(submission_parser,solution_parser)
 for i,result in enumerate(results.test_results):
@@ -56,7 +58,7 @@ for i,result in enumerate(results.test_results):
   match result.result:
     case TestResult.Passed: marker = '✅'
     case TestResult.Failed: marker = '❌'
-    case TestResult.Invalidated: marker = '🛑'
+    case TestResult.Invalidated: marker = '🚫'
 
   res['got'] += f"{marker} {result.possible_score}pt\t \t{result.test_name}\n"
 

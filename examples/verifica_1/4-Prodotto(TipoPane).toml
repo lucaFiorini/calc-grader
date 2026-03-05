@@ -1,14 +1,18 @@
 # Totale Prodotto (Per tipo di Pane)
 
 range="E18:E21"
-[[cases]]
+
+[prerequisite]
 name = "Valori"
 weight = 2
-[cases.tests]
-match_values = [500,550,660,470]
+
+[prerequisite.cases]
+match_solution_values = true
+
 [[cases]]
 weight = 1
 name = "Formula Efficiente"
+
 [cases.tests]
 is_formula = true
 no_formula_drift = true
