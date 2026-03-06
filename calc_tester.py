@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Any, Callable
 
 from .calc_types import cellValue,CellPosition
@@ -101,14 +102,15 @@ class TestResult(Enum):
   Invalidated = None
   Failed = False 
   Passed = True
-class TestResultInfo(BaseModel):
+
+@dataclass
+class TestResultInfo:
   test_name : str
   possible_score : int
   result : TestResult
 
-  def model_post_init(self, context: Any) -> None:
+  def __post_init__(self) -> None:
     assert self.possible_score != 0
-    return super().model_post_init(context)
   
 class Case(BaseModel):
   name : str
@@ -165,7 +167,9 @@ class Test(BaseModel):
       
     return TestResultList(test_results = assess_all_subcases(lambda case: TestResult(case.tests.execute(submission, solution, self._cells))))
   
-class TestResultList(BaseModel):
+
+@dataclass
+class TestResultList:
   test_results : list[TestResultInfo]
 
   def get_possible_score(self) -> int:

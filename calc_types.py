@@ -1,4 +1,5 @@
 from __future__ import annotations
+from dataclasses import dataclass
 from pydantic import BaseModel
 type coord = tuple[int,int]
 type cellValue = int|float|str
@@ -15,7 +16,8 @@ def string_to_col_num(s : str) -> int:
   
   return total
 
-class CellPosition(BaseModel):
+@dataclass
+class CellPosition:
   col: str
   row: int 
 
