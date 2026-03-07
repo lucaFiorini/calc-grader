@@ -194,14 +194,21 @@ class Test(BaseModel):
       
       if prerequisite_result.result.value:
         return TestResultList(
-          test_results = [prerequisite_result] + assess_all_subcases(lambda case: TestResult(case.tests.execute(submission, solution, self._cells)))
+          test_results = (
+            [prerequisite_result] + 
+            assess_all_subcases(lambda case: TestResult(case.tests.execute(submission, solution, self._cells)))
+          )
         )
       else:
         return TestResultList(
-          test_results = [prerequisite_result] + assess_all_subcases(lambda _: TestResult.Invalidated)
+          test_results = (
+            [prerequisite_result] +
+            assess_all_subcases(lambda _: TestResult.Invalidated)
+          )
         )
       
-    return TestResultList(test_results = assess_all_subcases(lambda case: TestResult(case.tests.execute(submission, solution, self._cells))))
+    return TestResultList(
+      test_results = assess_all_subcases(lambda case: TestResult(case.tests.execute(submission, solution, self._cells))))
   
 
 @dataclass
