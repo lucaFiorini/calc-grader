@@ -116,10 +116,14 @@ class TestCase(BaseModel):
   tests   : TestSet
   weight  : int        = 1
 
+def format_key(key : str) -> str:
+  return key.replace('-',' ').replace('_',' ').capitalize()
+
 class TestSetRegistry(BaseModel):
   _REGISTRY : ClassVar[dict[str,TestSet]] = {}
   
   key     : str       = Field(alias="from_preset")
+  name    : str       = Field(default_factory=lambda x: format_key(x['key']))
   weight  : int       = 1
   
   def model_post_init(self, context: Any) -> None:
@@ -129,7 +133,7 @@ class TestSetRegistry(BaseModel):
   
   def get_test_case(self) -> TestCase:
     return TestCase(
-      name=self.key,
+      name=self.name,
       weight=self.weight,
       tests=self._REGISTRY[self.key]
     )
