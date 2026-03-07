@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Annotated, Any, Callable, ClassVar, assert_never
 
 from .calc_types import cellValue,CellPosition
 from .calc_xml_parser import CalcParser
-from pydantic import BaseModel,Field,PrivateAttr
+from pydantic import BaseModel,Field,PrivateAttr, BeforeValidator, TypeAdapter
 from bs4 import Tag
 from enum import Enum
 
@@ -98,7 +98,7 @@ class TestSet(BaseModel):
       return submission_bgcolors == solution_bgcolors
     return True
 
-class TestResult(Enum):
+class TestResult(Enum): 
   Invalidated = None
   Failed = False 
   Passed = True
@@ -111,18 +111,52 @@ class TestResultInfo:
 
   def __post_init__(self) -> None:
     assert self.possible_score != 0
+class TestCase(BaseModel):
+  name    : str
+  tests   : TestSet
+  weight  : int        = 1
+
+class TestSetRegistry(BaseModel):
+  _REGISTRY : ClassVar[dict[str,TestSet]] = {}
   
-class Case(BaseModel):
-  name : str
-  weight : int
-  tests : TestSet
+  key     : str       = Field(alias="from_preset")
+  weight  : int       = 1
+  
+  def model_post_init(self, context: Any) -> None:
+    if self.key not in self._REGISTRY:
+      raise ValueError('Key not located in the registry')
+    return super().model_post_init(context)
+  
+  def get_test_case(self) -> TestCase:
+    return TestCase(
+      name=self.key,
+      weight=self.weight,
+      tests=self._REGISTRY[self.key]
+    )
+  
+  @staticmethod
+  def register(name : str, tests : TestSet) -> None:
+    if name in TestSetRegistry._REGISTRY:
+      raise ValueError('Test already registered')
+    TestSetRegistry._REGISTRY[name] = tests
+
+  
+TESTCASE_MAYBE_REF_VALIDATOR : TypeAdapter[TestCase|TestSetRegistry] = TypeAdapter(TestCase|TestSetRegistry)
+def validate_testcsae_maybe_ref(val : dict[str,Any]) -> TestCase:
+  parsed_val = TESTCASE_MAYBE_REF_VALIDATOR.validate_python(val)
+  match parsed_val:
+    case TestCase(): return parsed_val
+    case TestSetRegistry(): return parsed_val.get_test_case()
+    case _: assert_never(parsed_val)
+
+TestCaseOrRef = Annotated[TestCase, BeforeValidator(validate_testcsae_maybe_ref)]
 
 class Test(BaseModel):
   range         : str
   show_range    : bool = False
   
-  prerequisite  : Case|None     = None
-  cases         : list[Case]    = Field(default_factory=lambda: list())
+  prerequisite  : TestCaseOrRef|None  = None
+  cases         : list[TestCaseOrRef] = Field(default_factory=lambda: list())
 
   _cells : list[CellPosition] = PrivateAttr(default_factory=lambda: list())
 
@@ -140,7 +174,7 @@ class Test(BaseModel):
 
   def execute(self,submission: CalcParser, solution : CalcParser) -> 'TestResultList':
     
-    def assess_all_subcases(case_result : Callable[[Case],TestResult]):
+    def assess_all_subcases(case_result : Callable[[TestCase],TestResult]):
       return [
         TestResultInfo (
           test_name=test_case.name,
