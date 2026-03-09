@@ -12,7 +12,7 @@ from calc_xml_parser import CalcParser
 from bs4 import BeautifulSoup
 
 # Register Common testcases
-templates = toml.loads("""{{TEST.glbalextra}}""")
+templates = toml.loads("""{{QUESTION.glbalextra}}""")
 for key in templates:
   TestSetRegistry.register(
     key=key,
