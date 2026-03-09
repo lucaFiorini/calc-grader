@@ -139,10 +139,10 @@ class TestSetRegistry(BaseModel):
     )
   
   @staticmethod
-  def register(name : str, tests : TestSet) -> None:
-    if name in TestSetRegistry._REGISTRY:
+  def register(key : str, tests : TestSet) -> None:
+    if key in TestSetRegistry._REGISTRY:
       raise ValueError('Test already registered')
-    TestSetRegistry._REGISTRY[name] = tests
+    TestSetRegistry._REGISTRY[key] = tests
 
   
 TESTCASE_MAYBE_REF_VALIDATOR : TypeAdapter[TestCase|TestSetRegistry] = TypeAdapter(TestCase|TestSetRegistry)

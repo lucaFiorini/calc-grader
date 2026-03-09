@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 
 # Register Common testcases
 calc_tester.TestSetRegistry.register(
-  name="FREE LUNCH!",
+  key="FREE LUNCH!",
   tests=TestSet()
 )
 
