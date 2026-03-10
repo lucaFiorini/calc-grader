@@ -119,6 +119,10 @@ class TestCase(BaseModel):
 def format_key(key : str) -> str:
   return key.replace('-',' ').replace('_',' ').capitalize()
 
+class TestSetTemplate(BaseModel):
+  default_name : str|None = None
+  tests : TestSet
+
 class TestSetRegistry:
   _REGISTRY : ClassVar[dict[str,TestSetTemplate]] = {}
   
@@ -128,11 +132,6 @@ class TestSetRegistry:
       raise ValueError('Test already registered')
     TestSetRegistry._REGISTRY[key] = template
 
-class TestSetTemplate(BaseModel):
-  default_name : str|None = None
-  tests : TestSet
-
-  
 class RegisteredTestSetReference(BaseModel):
   key     : str       = Field(alias="from_preset")
   weight  : int       = 1
