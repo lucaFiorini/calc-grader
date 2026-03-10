@@ -132,8 +132,8 @@ class TestSetRegistry:
       raise ValueError('Test already registered')
     TestSetRegistry._REGISTRY[key] = template
 
-class RegisteredTestSetReference(BaseModel):
-  key     : str       = Field(alias="from_preset")
+class RegisteredTestSetTemplate(BaseModel):
+  key     : str       = Field(alias="from_template")
   weight  : int       = 1
   
   def model_post_init(self, context: Any) -> None:
@@ -155,12 +155,12 @@ class RegisteredTestSetReference(BaseModel):
       tests=TestSetRegistry._REGISTRY[self.key].tests
     )
 
-TESTCASE_MAYBE_REF_VALIDATOR : TypeAdapter[TestCase|RegisteredTestSetReference] = TypeAdapter(TestCase|RegisteredTestSetReference)
+TESTCASE_MAYBE_REF_VALIDATOR : TypeAdapter[TestCase|RegisteredTestSetTemplate] = TypeAdapter(TestCase|RegisteredTestSetTemplate)
 def validate_testcsae_maybe_ref(val : dict[str,Any]) -> TestCase:
   parsed_val = TESTCASE_MAYBE_REF_VALIDATOR.validate_python(val)
   match parsed_val:
     case TestCase(): return parsed_val
-    case RegisteredTestSetReference(): return parsed_val.get_test_case()
+    case RegisteredTestSetTemplate(): return parsed_val.get_test_case()
     case _: assert_never(parsed_val)
 
 TestCaseOrRef = Annotated[TestCase, BeforeValidator(validate_testcsae_maybe_ref)]
