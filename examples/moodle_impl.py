@@ -1,6 +1,6 @@
 import toml
 import subprocess
-import calc_tester
+import json
 
 #from py_calc_tester.calc_tester import Test,TestResult
 #from py_calc_tester.calc_xml_parser import CalcParser
@@ -8,7 +8,7 @@ import calc_tester
 from calc_tester import Test,TestResult,TestCase,TestSet,TestSetTemplate,TestSetRegistry
 from calc_xml_parser import CalcParser
 
-
+from typing import Any
 from bs4 import BeautifulSoup
 
 # Register Common testcases
@@ -53,27 +53,53 @@ try:
 except:
   raise Exception('Errore Interno: File di soluzione NON trovato')
 
-tests = Test.model_validate(toml.loads("""{{TEST.extra| e('py')}}"""))
-res = {}
+tests = json.loads("""{{TESTCASES | json_encode | e('py')}}""")
 
-res['got'] = ""
-if tests.show_range:
-  res['got'] += f"Range del test: {tests.range}\n"
-  res['got'] += f"\n"
+test_summaries : list[dict[str,str]] = []
+total_result : float = 0
 
-results = tests.execute(submission_parser,solution_parser)
-for i,result in enumerate(results.test_results):
+for test in tests:
+  test = Test.model_validate(toml.loads(test['extra']))
+  res = {}
 
-  match result.result:
-    case TestResult.Passed: marker = '✅'
-    case TestResult.Failed: marker = '❌'
-    case TestResult.Invalidated: marker = '🚫'
+  res['out'] = ""
+  if test.show_range:
+    res['range'] = f"{test.range}"
+  else:
+    res['range'] = f"NASCOSTO"
 
-  res['got'] += f"{marker} {result.possible_score}pt\t \t{result.test_name}\n"
+  case_results = test.execute(submission_parser,solution_parser)
+  for i,result in enumerate(case_results.test_results):
 
-res['got'] += '\n'
-res['got'] += f"Risultato Sezione: \t [{results.get_got_score()}/{results.get_possible_score()}]`\n"
-res['fraction'] = results.get_got_fraction()
+    match result.result:
+      case TestResult.Passed: marker = '✅'
+      case TestResult.Failed: marker = '❌'
+      case TestResult.Invalidated: marker = '🚫'
 
-import json
-print(json.JSONEncoder().encode(res))
+    res['out'] += f"{marker} {result.possible_score}pt\t \t{result.test_name}\n"
+
+  res['out'] += '\n'
+  res['ottenuto'] = f"\t [{case_results.get_got_score()}/{case_results.get_possible_score()}]`\n"
+  total_result += case_results.get_got_fraction() / len(tests)
+
+  test_summaries.append(res)
+
+results_table : list[list[str]] = []
+
+header = ["#N Test","Range","Casi","Ottenuto"]
+results_table.append(header)
+
+cols = ['range','out','ottenuto']
+for i,summary in enumerate(test_summaries):
+  results_table.append([str(i+1)])
+  for col in cols:
+    results_table[-1].append(summary[col])
+    
+print(
+  json.dumps(
+    {
+      "testresults": results_table,
+      "fraction":total_result
+    }
+  )
+)
