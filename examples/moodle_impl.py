@@ -59,7 +59,7 @@ test_summaries : list[dict[str,str]] = []
 total_result : float = 0
 
 for test in tests:
-  test = Test.model_validate(toml.loads(test['extra']))
+  test = Test.model_validate(toml.loads(test['testcode']))
   res = {}
 
   res['out'] = ""
@@ -79,7 +79,7 @@ for test in tests:
     res['out'] += f"{marker} {result.possible_score}pt\t \t{result.test_name}\n"
 
   res['out'] += '\n'
-  res['ottenuto'] = f"\t [{case_results.get_got_score()}/{case_results.get_possible_score()}]`\n"
+  res['ottenuto'] = f"[{case_results.get_got_score()}/{case_results.get_possible_score()}]\n"
   total_result += case_results.get_got_fraction() / len(tests)
 
   test_summaries.append(res)
@@ -99,6 +99,7 @@ print(
   json.dumps(
     {
       "testresults": results_table,
+      "epiloguehtml":f"<p>Voto finale: {round(total_result*10,1)}</p>", 
       "fraction":total_result
     }
   )
