@@ -12,7 +12,7 @@ from typing import Any
 from bs4 import BeautifulSoup
 
 # Register Common testcases
-templates = toml.loads("""{{QUESTION.glbalextra}}""")
+templates = toml.loads("""{{QUESTION.globalextra}}""")
 for key in templates:
   TestSetRegistry.register(
     key=key,
