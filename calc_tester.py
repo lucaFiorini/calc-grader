@@ -168,7 +168,7 @@ TestCaseOrRef = Annotated[TestCase, BeforeValidator(validate_testcsae_maybe_ref)
 
 class Test(BaseModel):
   range         : str
-  show_range    : bool = False
+  show_range    : bool = True
   
   prerequisite  : TestCaseOrRef|None  = None
   cases         : list[TestCaseOrRef] = Field(default_factory=lambda: list())
