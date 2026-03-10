@@ -62,6 +62,7 @@ for test in tests:
   test = Test.model_validate(toml.loads(test['testcode']))
   res = {}
 
+  res['description'] = '[NON DEFINITA]' if test.description is None else test.description
   res['out'] = ""
   if test.show_range:
     res['range'] = f"{test.range}"
@@ -86,10 +87,10 @@ for test in tests:
 
 results_table : list[list[str]] = []
 
-header = ["#N Test","Range","Casi","Ottenuto"]
+header = ["#N","Descrizione","Range","Casi","Ottenuto"]
 results_table.append(header)
 
-cols = ['range','out','ottenuto']
+cols = ['description','range','out','ottenuto']
 for i,summary in enumerate(test_summaries):
   results_table.append([str(i+1)])
   for col in cols:
@@ -99,7 +100,7 @@ print(
   json.dumps(
     {
       "testresults": results_table,
-      "epiloguehtml":f"<p>Voto finale: {round(total_result*10,1)}</p>", 
+      "epiloguehtml":f"<h3>Voto finale: {round(total_result*10,1)}</h3>", 
       "fraction":total_result
     }
   )
