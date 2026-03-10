@@ -1,43 +1,33 @@
 # Usage:
 #
-# range = <str>  : [Required] A valid Calc range, e.g. "A1:C3"
+# range = <str>       : [Required] A valid Calc range, e.g. "A1:C3"
+# show_range = <bool> : [Optional] If False, range is hidden
+
+# [prerequisite] : [Optional] A single prerequisite testcase to be ran before the others
+# < See `TestCase` >
 #
-# [[cases]]
-# name = <str>   : [Required] A descriptive name for the test case
-# weight = <int> : [Required] Points assigned to this test case
+# [[cases]] : [Optional] A list of `TestCase`s structured the same as a prerequisite
+# < See `TestCase` >
 #
-# [cases.tests]
-# match_values = [<str|int>, ...]  : [Optional] cells must match these exact values
-# is_formula = <bool>              : [Optional] True if cells must contain formulas
-# is_bold = <bool>                 : [Optional] True if cells must be bold
-# no_formula_drift = <bool>        : [Optional] True if all formulas must be identical across the range
-# has_bgcolor = <bool>             : [Optional] True if cells must have any background color
-# match_bgcolor = "<hex color>"    : [Optional] exact background color required, e.g., "#FFFF00"
+# def `TestCase`:
+#   Either : { 
+#     name = <str>    : [Required]
+#     weight = <int>  : [Optional] [Default = 1] The relative weight of this case when grading this TestSet
+#   
+#     [`<ParentName>`.tests] 
+#     match_values = [<str|int>, ...]  : [Optional] cells must match these exact values
+#     match_solution_values = <bool>   : [Optional] True if cells must match provided solution values
+#     is_formula = <bool>              : [Optional] True if cells must contain formulas
+#     is_bold = <bool>                 : [Optional] True if cells must be bold
+#     no_formula_drift = <bool>        : [Optional] True if all formulas must be identical across the range
+#     has_bgcolor = <bool>             : [Optional] True if cells must have any background color
+#     match_bgcolor = "<hex color>"    : [Optional] exact background color required, e.g., "#FFFF00"
+#   }
+#   Or : {
+#     from_template = <key>   : [Required] Loads a template 
+#     name = <str>            : [Optional] Override default template name
+#   }
 #
+# Example:
 
-range = "A1:A3"
-
-[[subcases]]
-name = "Values must match exactly"
-weight = 5
-[subcases.tests]
-match_values = [1, 2, 3]
-
-[[subcases]]
-name = "All cells must contain formulas"
-weight = 3
-[subcases.tests]
-is_formula = true
-no_formula_drift = true
-
-[[subcases]]
-name = "Cells must have background color"
-weight = 2
-[subcases.tests]
-has_bgcolor = true
-
-[[subcases]]
-name = "Background color must be yellow"
-weight = 1
-[subcases.tests]
-match_bgcolor = "#FFFF00"
+#TODO
